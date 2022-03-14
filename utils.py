@@ -1,7 +1,7 @@
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
 
-root_file_dir = "file:///Users/sumitkumar42/PycharmProjects/SparkCourse/"
+root_file_dir = "file:///Users/sumit/PycharmProjects/spark-learning /"
 
 
 def print_rdd(rdd):
