@@ -2,7 +2,7 @@
 
 ## Spark RDD's
 
-### Spark config
+### Spark config and context
 ```
 from pyspark import SparkConf, SparkContext
 conf = SparkConf().setMaster("local").setAppName("app_name")
