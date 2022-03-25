@@ -161,12 +161,24 @@ result_select.groupBy("column_name").agg(func.round(func.avg("coulumn_name_2"),2
 alias:
 Provides an alias to the SQL select column
 result_select.groupBy("column_name").agg(func.round(func.avg("coulumn_name_2"),2).alias("avg")).show()
+
+explode:
+Converts the list passed as parameter into Row objects
+rows_df = inferred_schema.select(func.explode(some_list)).alias("rows_name")
 ```
 ```
-column_names in double quotes is as good as inferred_schema.columns_name
+column_names in double quotes is as good as inferred_schema.columns_name.
+func.col("column_name") is the same.
+```
+```
+Using df with unstructured text data isn't a great fit.
+df will have Row objects with a coulmn names 'value' for each line of text.
+This is where RDD's should be better fit.
+
+RDD's can be converted to df.
 ```
 
 ### Closing SparkSession
 ```
-spark_session_close()
+spark_session.close()
 ```
