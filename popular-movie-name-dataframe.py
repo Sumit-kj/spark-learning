@@ -6,7 +6,7 @@ from pyspark.sql.types import StructType, StructField, IntegerType, LongType
 
 def load_movie_mapping():
     movie_map = {}
-    with codecs.open(utils.root_dir + 'ml-100k/u.ITEM', "r", encoding='ISO-8859-1', errors='ignore') as f:
+    with codecs.open(utils.root_dir + 'ml-100k/u.item', "r", encoding='ISO-8859-1', errors='ignore') as f:
         for line in f:
             fields = line.split('|')
             movie_map[int(fields[0])] = fields[1]
