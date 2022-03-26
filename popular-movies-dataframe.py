@@ -19,3 +19,5 @@ movie_popularity = input_df.select("movie_id", "rating").groupBy("movie_id").agg
 
 movie_popularity_sorted = movie_popularity.orderBy(func.desc("review_count"))
 movie_popularity_sorted.show(movie_popularity_sorted.count())
+
+spark.stop()
