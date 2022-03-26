@@ -22,9 +22,11 @@ superhero_popularity_hero_count_distinct = superhero_popularity_hero_count.group
     .agg(func.sum(func.col("popularity")).alias("connections"))
 
 superhero_popularity_hero_count_distinct_sorted = superhero_popularity_hero_count_distinct.orderBy(
-    func.desc("connections"))
+    func.asc("connections"))
 
-most_popular_hero_id = superhero_popularity_hero_count_distinct_sorted.select("hero_id").first().hero_id
+min_connection_count = superhero_popularity_hero_count_distinct_sorted.select("connections").first()[0]
 
-most_popular_hero_name = name_map_df.filter(func.col("hero_id") == most_popular_hero_id).select("hero_name").first()
-print(most_popular_hero_name[0])
+obscure_superhero_id = superhero_popularity_hero_count_distinct.filter(func.col("connections") == min_connection_count)
+
+obscure_superhero_name = name_map_df.join(obscure_superhero_id, "hero_id").select("hero_name")
+obscure_superhero_name.show(obscure_superhero_id.count())
