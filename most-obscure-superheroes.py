@@ -2,7 +2,7 @@ import utils
 from pyspark.sql import functions as func
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 
-spark = utils.get_spark_session("PopularSuperhero")
+spark = utils.get_spark_session("ObscureSuperhero")
 
 schema = StructType([
     StructField("hero_id", IntegerType(), True),
@@ -21,10 +21,7 @@ superhero_popularity_hero_count = superhero_popularity_hero.withColumn("populari
 superhero_popularity_hero_count_distinct = superhero_popularity_hero_count.groupBy("hero_id")\
     .agg(func.sum(func.col("popularity")).alias("connections"))
 
-superhero_popularity_hero_count_distinct_sorted = superhero_popularity_hero_count_distinct.orderBy(
-    func.asc("connections"))
-
-min_connection_count = superhero_popularity_hero_count_distinct_sorted.select("connections").first()[0]
+min_connection_count = superhero_popularity_hero_count_distinct.agg(func.min("connections")).first()[0]
 
 obscure_superhero_id = superhero_popularity_hero_count_distinct.filter(func.col("connections") == min_connection_count)
 
