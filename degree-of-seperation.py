@@ -1,21 +1,20 @@
 import utils
 from pyspark import SparkConf, SparkContext
 
-conf = SparkConf().setMaster("local").setAppName("DegreesOfSeparation")
-sc = SparkContext(conf=conf)
+sc = utils.get_spark_context("local", "DegreeOfSeparation")
 
 # The characters we wish to find the degree of separation between:
-startCharacterID = 5306  # SpiderMan
-targetCharacterID = 14  # ADAM 3,031 (who?)
+start_character_id = 5306  # SpiderMan
+target_character_id = 14  # ADAM 3,031 (who?)
 
 # Our accumulator, used to signal when we find the target character during
 # our BFS traversal.
-hitCounter = sc.accumulator(0)
+hit_counter = sc.accumulator(0)
 
 
-def convertToBFS(line):
+def convert_to_bfs(line):
     fields = line.split()
-    heroID = int(fields[0])
+    hero_id = int(fields[0])
     connections = []
     for connection in fields[1:]:
         connections.append(int(connection))
@@ -23,20 +22,20 @@ def convertToBFS(line):
     color = 'WHITE'
     distance = 9999
 
-    if heroID == startCharacterID:
+    if hero_id == start_character_id:
         color = 'GRAY'
         distance = 0
 
-    return heroID, (connections, distance, color)
+    return hero_id, (connections, distance, color)
 
 
-def createStartingRdd():
-    inputFile = sc.textFile(utils.root_file_dir + 'mcu/marvel-graph.txt')
-    return inputFile.map(convertToBFS)
+def create_starting_rdd():
+    input_file = sc.textFile(utils.root_file_dir + 'mcu/marvel-graph.txt')
+    return input_file.map(convert_to_bfs)
 
 
-def bfsMap(node):
-    characterID = node[0]
+def bfs_map(node):
+    character_id = node[0]
     data = node[1]
     connections = data[0]
     distance = data[1]
@@ -47,24 +46,24 @@ def bfsMap(node):
     # If this node needs to be expanded...
     if color == 'GRAY':
         for connection in connections:
-            newCharacterID = connection
-            newDistance = distance + 1
-            newColor = 'GRAY'
-            if targetCharacterID == connection:
-                hitCounter.add(1)
+            new_character_id = connection
+            new_distance = distance + 1
+            new_color = 'GRAY'
+            if target_character_id == connection:
+                hit_counter.add(1)
 
-            newEntry = (newCharacterID, ([], newDistance, newColor))
-            results.append(newEntry)
+            new_entry = (new_character_id, ([], new_distance, new_color))
+            results.append(new_entry)
 
         # We've processed this node, so color it black
         color = 'BLACK'
 
     # Emit the input node, so we don't lose it.
-    results.append((characterID, (connections, distance, color)))
+    results.append((character_id, (connections, distance, color)))
     return results
 
 
-def bfsReduce(data1, data2):
+def bfs_reduce(data1, data2):
     edges1 = data1[0]
     edges2 = data2[0]
     distance1 = data1[1]
@@ -107,7 +106,7 @@ def bfsReduce(data1, data2):
 
 
 # Main program here:
-iterationRdd = createStartingRdd()
+iteration_rdd = create_starting_rdd()
 
 for iteration in range(0, 10):
     print("Running BFS iteration# " + str(iteration + 1))
@@ -115,17 +114,17 @@ for iteration in range(0, 10):
     # Create new vertices as needed to darken or reduce distances in the
     # 'reduce' stage. If we encounter the node we're looking for as a GRAY
     # node, increment our accumulator to signal that we're done.
-    mapped = iterationRdd.flatMap(bfsMap)
+    mapped = iteration_rdd.flatMap(bfs_map)
 
     # Note that mapped.count() action here forces the RDD to be evaluated, and
     # that's the only reason our accumulator is actually updated.
     print("Processing " + str(mapped.count()) + " values.")
 
-    if hitCounter.value > 0:
-        print("Hit the target character! From " + str(hitCounter.value)
+    if hit_counter.value > 0:
+        print("Hit the target character! From " + str(hit_counter.value)
               + " different direction(s).")
         break
 
     # Reducer combines data for each character ID, preserving the darkest
     # color and shortest path.
-    iterationRdd = mapped.reduceByKey(bfsReduce)
+    iteration_rdd = mapped.reduceByKey(bfs_reduce)
