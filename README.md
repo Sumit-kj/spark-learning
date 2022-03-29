@@ -182,3 +182,25 @@ RDD's can be converted to df.
 ```
 spark_session.close()
 ```
+
+### Accumulator
+```
+An accumulator allows many executor nodes to share a variable across nodes.
+It can be used as a termination condition, or communication between nodes.
+```
+
+### Map and Reduce
+```
+Map and Reduce is like Divide and Conquer.
+Map divides the data for actions and extends the dataframe.
+Reduce conquers the mapped data and reduces the dataframe. 
+```
+
+### Caching the  Dataframes
+```
+It's a good practice to cache any action, when more than one actions are performed.
+Spark might re-evaluate the entire dataframe all over again!
+.cache() and .persist() are used for caching.
+Both of these are used to cache, persist() optionally lets the user cache it to disk instead of memory.
+It is helpful in case a node fails or something.
+```
